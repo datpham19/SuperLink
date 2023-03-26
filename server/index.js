@@ -13,6 +13,10 @@ const PORT = 3500
 app.use(cors())
 app.use(express.json())
 
+app.get('/', (req, res) => {
+    res.send('Hello World!')
+})
+
 app.post('/calculate', async (req, res) => {
     // Validate request
     const body = req.body
