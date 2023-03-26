@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "nodemon --experimental-modules server/index.js"
+    "start": "node server/index.js",
+    "start:dev": "nodemon --experimental-modules server/index.js"
   },
   "dependencies": {
     "cookie-parser": "~1.4.4",
