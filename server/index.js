@@ -8,8 +8,8 @@ import {requestSchema} from "./schemas/calculateSchema.js";
 import {encodeRouter} from "./routers/swapEncoder.js";
 
 const app = express()
-var server_port = process.env.YOUR_PORT || process.env.PORT || 80;
-var server_host = process.env.YOUR_HOST || '0.0.0.0';
+const port = process.env.PORT || 3000;;
+const host = '0.0.0.0';
 
 app.use(cors())
 app.use(express.json())
@@ -44,6 +44,6 @@ app.post('/encode', async (req, res) => {
     res.json({data: data})
 });
 
-app.listen(port, host, () => {
+app.listen(port, () => {
     console.log(`Bird is flying at ${port}`)
 })
