@@ -12,7 +12,7 @@ const port = process.env.PORT || 3000;;
 const host = '0.0.0.0';
 
 app.use(cors({
-    origin: ['http://localhost:3000', 'https://superlink.ag/']
+    origin: '*'
 }));
 
 app.use(express.json())
