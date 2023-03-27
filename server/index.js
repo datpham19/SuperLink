@@ -19,7 +19,7 @@ app.get('/', (req, res) => {
     res.send('Hello World!')
 })
 
-app.post('/calculate', cors(), async (req, res) => {
+app.post('/calculate', async (req, res) => {
     // Validate request
     const body = req.body
     const isValid = validateSchema(body, requestSchema)
@@ -40,7 +40,7 @@ app.post('/calculate', cors(), async (req, res) => {
     res.json(response)
 });
 
-app.post('/encode', cors(), async (req, res) => {
+app.post('/encode', async (req, res) => {
     let data = encodeRouter(req.body);
     res.json({data: data})
 });
