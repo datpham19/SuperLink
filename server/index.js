@@ -11,17 +11,15 @@ const app = express()
 const port = process.env.PORT || 3000;;
 const host = '0.0.0.0';
 
-app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:3001', 'https://superlink.ag/']
-}));
-
+app.use(cors());
+app.options('*', cors())
 app.use(express.json())
 
 app.get('/', (req, res) => {
     res.send('Hello World!')
 })
 
-app.post('/calculate', async (req, res) => {
+app.post('/calculate', cors(), async (req, res) => {
     // Validate request
     const body = req.body
     const isValid = validateSchema(body, requestSchema)
@@ -42,7 +40,7 @@ app.post('/calculate', async (req, res) => {
     res.json(response)
 });
 
-app.post('/encode', async (req, res) => {
+app.post('/encode', cors(), async (req, res) => {
     let data = encodeRouter(req.body);
     res.json({data: data})
 });
