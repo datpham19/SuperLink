@@ -1,10 +1,10 @@
 import {web3} from "../web3.js";
 import {LIST_FACTORY_ADDRESS, ABI} from "../constants.js";
 
-export const getAddressPoolUniV2 = async (TokenA, TokenB) => {
+export const getAddressPoolUniV2 = async (TokenA, TokenB,chain) => {
 
     const arrAddressPool = await Promise.all(
-        LIST_FACTORY_ADDRESS.binanceTestNet.map(async (item) => {
+        LIST_FACTORY_ADDRESS[chain].map(async (item) => {
             const contract = new web3.eth.Contract(
                 ABI.FACTORY_UNI_V2,
                 item.factory

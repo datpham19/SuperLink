@@ -8,10 +8,12 @@ import {calcAmountOutUniV3, getReservePoolUniV3} from './DEXs/uniV3.js'
 
 import lodash from 'lodash'
 import {findAllRoute} from "./sLRouters.js";
+import { genWeb3Route, web3 } from './web3.js'
 
 const {uniqBy, add, xorBy, intersection, intersectionBy} = lodash
 
 const listPoolCurveV1 = []
+
 
 
 const getDetailPool = async (address, type, coins) => {
@@ -30,7 +32,8 @@ const getDetailPool = async (address, type, coins) => {
             default:
                 return []
         }
-    } catch (err) {
+    }
+    catch (err) {
         console.log(err)
         console.log(address, type, coins)
     }
@@ -137,7 +140,7 @@ const getDataRoute = async (routeInput) => {
         const route = await Promise.all(item.route.map(async routeItem => {
             const subRoute1 = await Promise.all(routeItem.subRoute.map(async it => {
                 const coins = it.coins ? it.coins : routeItem.coins
-                const {i, j} = getIndexPoolCurve(coins, routeItem.coins)
+                const { i, j } = getIndexPoolCurve(coins, routeItem.coins)
                 const detail = await getDetailPool(it.address, it.type, coins)
                 return {
                     ...it,
@@ -176,7 +179,7 @@ const addPoolMultiToken = (routeInput, queuePoolCurveV1) => {
                 return isSwapStableCoin
             }).map(item => {
                 const coins = item.coins ? item.coins : routeItem.coins
-                const {i, j} = getIndexPoolCurve(coins, routeItem.coins)
+                const { i, j } = getIndexPoolCurve(coins, routeItem.coins)
                 const rate = calcRateCurve(item, i, j)
                 return {
                     ...item,
@@ -253,6 +256,9 @@ const splicePercent = (routeInput) => {
     const routeOutput0 = routeInput.map(item => {
         const route = item.route.map(routeItem => {
             const totalAmountTradedEst = routeItem.subRoute.reduce((a, b) => a + b.amountTradedEst, 0)
+
+            const totalRate = routeItem.subRoute.reduce((a, b) => a + b.amountTradedEst * (b.rate ? b.rate : 0), 0)
+
             const newSubRoute = routeItem.subRoute.map(it => {
                 return {
                     ...it,
@@ -263,11 +269,21 @@ const splicePercent = (routeInput) => {
             return {
                 ...routeItem,
                 subRoute: newSubRoute,
-                totalAmountTradedEst
+                totalAmountTradedEst,
+                totalRate: totalRate / totalAmountTradedEst
             }
         })
 
-        const amountTradedEst = route.reduce((a, b) => a < b.totalAmountTradedEst ? a : b.totalAmountTradedEst, route[0].totalAmountTradedEst)
+        const arrayAmountTradedEst = route.map((item, index) => {
+            if (index === 0) return item.totalAmountTradedEst
+            return item.totalAmountTradedEst/route[index - 1].totalRate
+        })
+
+        const amountTradedEst = arrayAmountTradedEst.reduce((a, b) => a < b ? a : b, arrayAmountTradedEst[0])
+
+
+
+        //const amountTradedEst = route.reduce((a, b) => a < b.totalAmountTradedEst ? a : b.totalAmountTradedEst, route[0].totalAmountTradedEst)
 
         return {
             ...item,
@@ -355,26 +371,46 @@ const sortRoute = (routeInput) => {
     return routeOutput
 }
 
+const convertBigInttoNumberRoute =(routeInput)=>{
+    const routeOutput = routeInput.map(item => {
+        const route = item.route.map(routeItem => {
+            const newSubRoute = routeItem.subRoute.map(it => {
+            
+                const newA = item.A ? Number(item.A): 0
+                const newD =item.D ? Number(item.D): 0
+                const newGamma =item.gamma ? Number(item.gamma): 0
 
-const maxAmountOut = (routeInput) => {
-    const resultRoute = routeInput.map(item => {
-        const routeItemLength = item.route.length
+                return {
+                    ...it,
+                    A:newA,
+                    D:newD,
+                    gamma:newGamma
+                }
+            })
 
-        const maxAmountOut = item.route[routeItemLength - 1].subRoute.reduce((a, b) => a + b.reserve[b.j], 0)
-
-
+            return {
+                ...routeItem,
+                subRoute: newSubRoute,
+            }
+        })
+        return {
+            ...item,
+            route: route,
+        }
     })
-
-    return resultRoute
+    return routeOutput
 }
 
 
-export const main = async (tokenA, tokenB, amount = 10000000, chain, callback = undefined) => {
+
+export const main = async (tokenA, tokenB, amount = 10000000, chain, callback) => {
+
+    genWeb3Route(chain.chainRPC)
 
 
-    const allRouter = await findAllRoute(tokenA, tokenB, chain, listPoolCurveV1)
+    const allRouter = await findAllRoute(tokenA, tokenB, chain.chainId, listPoolCurveV1)
 
-    listPoolCurveV1.push(...DATA_POOL_CURVE_TESTNET_BSC)
+    //listPoolCurveV1.push(...DATA_POOL_CURVE_TESTNET_BSC)
 
     let queuePoolCurve = await Promise.all(uniqBy(listPoolCurveV1, 'id').map(async it => {
         const detail = await getDetailPool(it.address, it.type, it.coins)
@@ -384,59 +420,58 @@ export const main = async (tokenA, tokenB, amount = 10000000, chain, callback = 
         }
     }))
 
-    const routeHaveData = await getDataRoute(allRouter)
+        const routeHaveData = await getDataRoute(allRouter)
+    
+        const routeHaveTradeEst = setAmountTradedEst(routeHaveData, 0.01)
+    
+        const routeHavePercent = splicePercent(routeHaveTradeEst)
+    
+        const sortRouteByPercent = sortRoute(routeHavePercent)
+    
+        const routeHavePoolMultiToken = addPoolMultiToken(sortRouteByPercent, queuePoolCurve)
+    /* 
+        const routeHaveTradeEstLan2 = setAmountTradedEst(routeHavePoolMultiToken, 0.01)
+    
+        const routeHavePercentLan2 = splicePercent(routeHaveTradeEstLan2) */
+    
+        //const filterRoute = filterSmallPool(routeHavePercentLan2, 0.02)
+        
+    
 
-    const routeHaveTradeEst = setAmountTradedEst(routeHaveData, 0.01)
+    let maxOut = [0, 0, 0]
 
-    const routeHavePercent = splicePercent(routeHaveTradeEst)
+    for (let i = 1; i < 200; i++) {
 
-    const sortRouteByPercent = sortRoute(routeHavePercent)
+        const routeHaveTradeEst = setAmountTradedEst(routeHavePoolMultiToken, 0.005 * i)
 
+        const routeHavePercent1 = splicePercent(routeHaveTradeEst)
+        //console.log("🚀 ~ file: index.js:411 ~ main ~ routeHavePercent1:", routeHavePercent1)
 
-    const routeHavePoolMultiToken = addPoolMultiToken(sortRouteByPercent, queuePoolCurve)
+        const filterRoute1 = filterSmallPool(routeHavePercent1, 0.01)
 
+        const ecec1 = splicePercent(filterRoute1)
 
-    const routeHaveTradeEstLan2 = setAmountTradedEst(routeHavePoolMultiToken, 0.01)
+        const okla = calcAmountOutRoute(ecec1, amount*10**36)
+        const out = okla.reduce((a, b) => a + b.amountOut, 0) / (10 ** 36)
+        const amountIn = okla.reduce((a, b) => a + b.amountIn, 0) / (10 ** 36)
 
-
-    const routeHavePercentLan2 = splicePercent(routeHaveTradeEstLan2)
-
-    const filterRoute = filterSmallPool(routeHavePercentLan2, 0.02)
-    const ecec1 = splicePercent(filterRoute)
-
-    const okla = calcAmountOutRoute(ecec1, amount * 10**36)
-    // const out = okla.reduce((a, b) => a + b.amountOut, 0) / (10 ** 36)
-    return okla
-    // callback(okla, out)
-
-    // let maxOut = [0, 0, 0]
-    /*
-        for (let i = 1; i < 200; i++) {
-
-            const routeHaveTradeEst = setAmountTradedEst(routeHavePercentLan2, 0.005 * i)
-
-            const routeHavePercent1 = splicePercent(routeHaveTradeEst)
-            //console.log("🚀 ~ file: index.js:411 ~ main ~ routeHavePercent1:", routeHavePercent1)
-
-            const filterRoute1 = filterSmallPool(routeHavePercent1, 0.01)
-
-            const ecec1 = splicePercent(filterRoute1)
-
-            const okla = calcAmountOutRoute(ecec1, amount)
-            const out = okla.reduce((a, b) => a + b.amountOut, 0) / (10 ** 36)
-            const amountIn = okla.reduce((a, b) => a + b.amountIn, 0) / (10 ** 36)
-
-            if (maxOut[0] < out) {
-                maxOut[0] = out
-                maxOut[1] = 0.005 * i
-                maxOut[2] = okla
-            }
-            //console.log(okla,out , amountIn,0.01 * i)
-
-
+        if (maxOut[0] < out) {
+            maxOut[0] = out
+            maxOut[1] = 0.005 * i
+            maxOut[2] = okla
         }
-        callback(maxOut[2], maxOut[0])
-        console.log(maxOut)
-    */
+
+
+        //console.log(okla,out , amountIn,0.01 * i)
+    }
+
+    console.log(maxOut[2])
+    const resultRoute =convertBigInttoNumberRoute(maxOut[2])
+
+    return resultRoute
 
 }
+
+
+
+

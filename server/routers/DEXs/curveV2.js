@@ -312,6 +312,7 @@ export const getReservePoolCurveV2 = async (address, coins) => {
         ABI.POOL_CURVE_V2,
         address
     );
+
     const priceScaleStart = new Array(coins.length - 1).fill(0)
 
     const priceScale = await Promise.all(priceScaleStart.map(async (item, index) => {
@@ -397,7 +398,7 @@ export const calculateAmountTradedCurveV2 = (priceImpactEst, dataPool) => {
         }
         if (Math.abs(priceImpact - priceImpactEst) < 0.00001) {
             isLoop = false
-            return amountIn * coins[i].usdPrice
+            return amountIn
         }
         if (priceImpact - priceImpactEst > 0) cantren = amountIn
         if (priceImpact - priceImpactEst < 0) canduoi = amountIn

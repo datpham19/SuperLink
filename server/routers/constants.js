@@ -8,6 +8,7 @@ import * as amountOutUniV3 from '../ABIs/amount-univ3.json' assert {type: "json"
 import * as poolCurveV1 from '../ABIs/pool-curvev1.json' assert {type: "json"};
 import * as poolCurveV1Under from '../ABIs/pool-curvev1-under.json' assert {type: "json"};
 import * as poolCurveV1Aave from '../ABIs/pool-curvev1-aave.json' assert {type: "json"};
+import * as poolCurveV2 from '../ABIs/pool-curvev2.json' assert {type: "json"};
 
 import * as poolCurveV2Fac from '../ABIs/pool-curvev2-fac.json' assert {type: "json"};
 import * as tokenWrapperCompound from '../ABIs/token-wrapper-compose.json' assert {type: "json"};
@@ -28,7 +29,8 @@ const ABI_POOL_CURVE_V1 = poolCurveV1.default;
 const ABI_POOL_CURVE_V1_UNDER = poolCurveV1Under.default;
 const ABI_POOL_CURVE_V1_AAVE = poolCurveV1Aave.default;
 
-const ABI_POOL_CURVE_V2 = factoryUniV3.default;
+//const ABI_POOL_CURVE_V2 = factoryUniV3.default;
+const ABI_POOL_CURVE_V2 = poolCurveV2.default;
 const ABI_POOL_CURVE_V2_FAC = poolCurveV2Fac.default;
 
 const ABI_TOKEN_WRAPPER_COMPOUND = tokenWrapperCompound.default;
@@ -42,6 +44,19 @@ export const ADDRESS_CONTRACT = {
     stableSwap: "0x14019b6fec14cf6777954078917f8a239Aa1BE93",
 }
 
+export const chainType = {
+    solana: 'solana',
+    kucoin: 'kucoin',
+    boba: 'boba',
+    avax: 'avax',
+    binanceSmart: 'binanceSmart',
+    fantom: 'fantom',
+    matic: 'matic',
+    ether: 'ether',
+    heco: 'heco',
+    '97': '97'
+};
+
 export const POOL_TYPE = {
     uniV2: 'uniV2',
     uniV3: 'uniV3',
@@ -51,7 +66,7 @@ export const POOL_TYPE = {
     balancer: 'balancer'
 }
 export const LIST_FACTORY_ADDRESS = {
-    binanceSmart: [
+    [chainType.binanceSmart]: [
         {
             "tradeType": "pancakeSwap",
             "chain": "binanceSmart",
@@ -339,7 +354,7 @@ export const LIST_FACTORY_ADDRESS = {
 
 
     ],
-    eth: [
+    [chainType.ether]: [
         {
             name: "DXswapRouter",
             route: "0xB9960d9bcA016e9748bE75dd52F02188B9d0829f",
@@ -383,7 +398,7 @@ export const LIST_FACTORY_ADDRESS = {
             initCode: "0xe18a34eb0e04b04f7a0ac29a6e80748dca96319b42c54d679cb821dca90c6303"
         }
     ],
-    binanceTestNet: [
+    [chainType[97]]: [
         {
             "tradeType": "pancakeSwap",
             "chain": "binanceSmart",
@@ -430,10 +445,28 @@ export const ABI = {
     ABI_ADAPTER: ABI_ADAPTER
 
 }
-export const tokenTrungGian = [
-    {chainId: 1, address: '0xCA8eB2dec4Fe3a5abbFDc017dE48E461A936623D', decimals: 18, symbol: 'USDC', name: 'USD//C', usdPrice: 1},
-    {chainId: 1, address: '0x0fb5d7c73fa349a90392f873a4fa1ecf6a3d0a96', decimals: 18, symbol: 'USDT', name: 'USDT', usdPrice: 1},
-]
+export const tokenTrungGian = {
+    [chainType.binanceSmart]: [
+        { chainId: 56, address: '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c', decimals: 18, symbol: 'WBNB', name: 'Wrapped BNB' },
+        { chainId: 56, address: '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56', decimals: 18, symbol: 'BUSD', name: 'Binance USD' },
+        { chainId: 56, address: '0x55d398326f99059fF775485246999027B3197955', decimals: 18, symbol: 'USDT', name: 'Tether USD' },
+        { chainId: 56, address: '0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d', decimals: 18, symbol: 'USDC', name: 'Binance-Peg USD Coin' }
+    ],
+    [chainType.ether]: [
+        { chainId: 1, address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', decimals: 18, symbol: 'ETH', name: 'Ether', usdPrice: 1697 },
+        { chainId: 1, address: '0x6B175474E89094C44Da98b954EedeAC495271d0F', decimals: 18, symbol: 'DAI', name: 'Dai Stablecoin', usdPrice: 1 },
+        { chainId: 1, address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', decimals: 6, symbol: 'USDC', name: 'USD//C', usdPrice: 1 },
+        { chainId: 1, address: '0xdAC17F958D2ee523a2206206994597C13D831ec7', decimals: 6, symbol: 'USDT', name: 'Tether USD', usdPrice: 1 },
+        { chainId: 1, address: '0xc00e94Cb662C3520282E6f5717214004A7f26888', decimals: 18, symbol: 'COMP', name: 'Compound', usdPrice: 50 },
+        { chainId: 1, address: '0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2', decimals: 18, symbol: 'MKR', name: 'Maker}', usdPrice: 50 },
+    ],
+
+    [chainType[97]]: [
+        { chainId: 1, address: '0xCA8eB2dec4Fe3a5abbFDc017dE48E461A936623D', decimals: 18, symbol: 'USDC', name: 'USD//C', usdPrice: 1 },
+        { chainId: 1, address: '0x0fb5d7c73fa349a90392f873a4fa1ecf6a3d0a96', decimals: 18, symbol: 'USDT', name: 'USDT', usdPrice: 1 }
+    ]
+}
+
 
 export const DATA_POOL_CURVE_TESTNET_BSC = [
 

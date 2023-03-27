@@ -26,7 +26,7 @@ app.post('/calculate', async (req, res) => {
     let response = {}
     let responseData = []
     if (isValid) {
-        await superLinkRouter(body.token0, body.token1, body.amount, body.chain.chainRPC).then((tokenOut) => {
+        await superLinkRouter(body.token0, body.token1, body.amount, body.chain).then((tokenOut) => {
             responseData = tokenOut
         })
         // Return user data if it's valid
@@ -36,8 +36,8 @@ app.post('/calculate', async (req, res) => {
     };
     response.data = responseData;
     response.total = responseData.reduce((a, b) => a + b.amountOut, 0) / (10 ** 36)
-    console.log('Total: ', response.total);
-    console.log('Data: ', responseData)
+    //console.log('Total: ', response.total);
+    //console.log('Data: ', responseData)
     res.json(response)
 });
 

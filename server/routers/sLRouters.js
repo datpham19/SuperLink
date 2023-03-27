@@ -1,23 +1,17 @@
-import {tokenTrungGian} from "./constants.js"
+import {chainType, tokenTrungGian} from "./constants.js"
 import {getAddressPoolCurveV1, getDataPoolCurveV1} from "./DEXs/curveV1.js"
 import {getAddressPoolCurveV2, getAddressPoolCurveV2noFac, getDataPoolCurveV2} from "./DEXs/curveV2.js"
 import {getAddressPoolUniV2} from "./DEXs/uniV2.js"
 
 const getListAddressPool = async (addressTokenA, addressTokenB, chain, listPoolCurveV1, listDataPool) => {
 
-
     const arrAddressPoolUniV2 = await getAddressPoolUniV2(addressTokenA, addressTokenB, chain)
-    console.log("🚀 ~ file: router.js:11 ~ getListAddressPool ~ arrAddressPoolUniV2:", arrAddressPoolUniV2, addressTokenA, addressTokenB)
-
-
+    
     const arrAddressPoolCurveV1 = await getAddressPoolCurveV1(addressTokenA, addressTokenB, listDataPool, chain)
-    // console.log("🚀 ~ file: router.js:11 ~ getListAddressPool ~ arrAddressPoolCurveV1:", arrAddressPoolCurveV1, addressTokenA, addressTokenB, listDataPool)
 
     const arrAddressPoolCurveV2noFac = await getAddressPoolCurveV2noFac(addressTokenA, addressTokenB, listDataPool, chain)
 
-
     const arrAddressPoolCurveV2 = await getAddressPoolCurveV2(addressTokenA, addressTokenB, chain)
-
 
     const arrAddressPoolUniV3 = []// await getAddressPoolUniv3(addressTokenA, addressTokenB,chain)
 
@@ -26,18 +20,77 @@ const getListAddressPool = async (addressTokenA, addressTokenB, chain, listPoolC
     return resultArr
 }
 
-const getPoolApi = async () => {
+const getPoolApiChainEther = async () => {
     const listPoolCurveV1okla = await getDataPoolCurveV1()
     const listPoolCurveV2 = await getDataPoolCurveV2()
 
     return [...listPoolCurveV1okla, ...listPoolCurveV2]
 }
 
+const getPoolApiChainBscTestNet = async () => {
+    return [...DATA_POOL_CURVE_TESTNET_BSC]
+}
+
+const getPoolApi = async (chain) => {
+    switch (chain) {
+        case chainType.ether:
+            return await getPoolApiChainEther()
+        case chainType[97]:
+            return await getPoolApiChainBscTestNet()
+        default:
+            return []
+    }
+
+}
+
 export const findAllRoute = async (tokenA, tokenB, chain, listPoolCurveV1) => {
 
-    let listDataPool = []// await getPoolApi()
-    let allRoute = []
 
+    let listDataPool = await getPoolApi(chain)
+
+
+    let allRoute = []
+    /*  await Promise.all(tokenTrungGian.map(async itemC => {
+ 
+         tokenTrungGian.map(async itemD => {
+ 
+             if (itemC.address === tokenA.address || itemD.address === tokenB.address || itemC.address === itemD.address) return {}
+             if (itemC.address.toUpperCase() === tokenB.address.toUpperCase() || itemD.address.toUpperCase() === tokenA.address.toUpperCase()) return {}
+             const AtoC = await getListAddressPool(tokenA, itemC)
+             if (AtoC.length === 0) return {}
+             const CtoD = await getListAddressPool(itemC, itemD)
+             if (CtoD.length === 0) return {}
+             const DtoB = await getListAddressPool(itemD, tokenB)
+             if (DtoB.length === 0) return {}
+             allRoute.push({
+                 route: [
+                     {
+                         subRoute: AtoC,
+                         namePair: `${tokenA.symbol} ---> ${itemC.symbol}`,
+                         token0: tokenA.address,
+                         token1: itemC.address,
+                         coins: [tokenA, itemC]
+                     },
+                     {
+                         subRoute: CtoD,
+                         namePair: `${itemC.symbol} ---> ${itemD.symbol}`,
+                         token0: itemC.address,
+                         token1: itemD.address,
+                         coins: [itemC, itemD]
+                     },
+                     {
+                         subRoute: DtoB,
+                         namePair: `${itemD.symbol} ---> ${tokenB.symbol}`,
+                         token0: itemD.address,
+                         token1: tokenB.address,
+                         coins: [itemD, tokenB]
+                     },
+ 
+                 ]
+             })
+             return {}
+         })
+     })) */
     const AtoB = await getListAddressPool(tokenA, tokenB, chain, listPoolCurveV1, listDataPool)
     allRoute.push({
         route: [
@@ -49,7 +102,7 @@ export const findAllRoute = async (tokenA, tokenB, chain, listPoolCurveV1) => {
         ]
     })
 
-    await Promise.all(tokenTrungGian.map(async item => {
+    await Promise.all(tokenTrungGian[chain].map(async item => {
 
         if (item.address === tokenA.address || item.address === tokenB.address) return {}
         const AtoC = await getListAddressPool(tokenA, item, chain, listPoolCurveV1, listDataPool)
