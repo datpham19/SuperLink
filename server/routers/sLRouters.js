@@ -1,4 +1,4 @@
-import {chainType, tokenTrungGian} from "./constants.js"
+import {chainType, DATA_POOL_CURVE_TESTNET_BSC, tokenTrungGian} from "./constants.js"
 import {getAddressPoolCurveV1, getDataPoolCurveV1} from "./DEXs/curveV1.js"
 import {getAddressPoolCurveV2, getAddressPoolCurveV2noFac, getDataPoolCurveV2} from "./DEXs/curveV2.js"
 import {getAddressPoolUniV2} from "./DEXs/uniV2.js"
