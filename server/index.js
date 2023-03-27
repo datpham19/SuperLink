@@ -36,7 +36,8 @@ app.post('/calculate', async (req, res) => {
     };
     response.data = responseData;
     response.total = responseData.reduce((a, b) => a + b.amountOut, 0) / (10 ** 36)
-
+    console.log('Total: ', response.total);
+    console.log('Data: ', responseData)
     res.json(response)
 });
 

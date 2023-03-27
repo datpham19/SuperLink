@@ -12,16 +12,16 @@ export function validateSchema(data, schema) {
         const key = keys[i];
         const value = data[key];
         const propSchema = schema.properties[key];
+        
+        if (propSchema.type === 'number' && isNaN(value) === true) {
+            return false
+        }
 
         if (propSchema.required && !value) {
             return false;
         }
 
         if (propSchema.type === 'string' && typeof value !== 'string' && (propSchema.maxLength < value.length || propSchema.maxLength === undefined)) {
-            return false;
-        }
-
-        if (propSchema.type === 'number' && typeof value !== 'number') {
             return false;
         }
 
