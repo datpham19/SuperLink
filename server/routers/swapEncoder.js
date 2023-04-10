@@ -1,4 +1,4 @@
-import Web3EthAbi from 'web3-eth-abi';
+
 import {POOL_TYPE, ADDRESS_CONTRACT, ABI} from "./constants.js";
 import {web3} from "./web3.js";
 import Web3 from "web3";
@@ -8,7 +8,7 @@ const encodePairUniv2 = (dataPool) => {
     const {coins, address} = dataPool
     const [fromToken, toToken] = coins
 
-    return Web3EthAbi.encodeParameter({
+    return web3.eth.abi.encodeParameter({
             SwapParam: {
                 fromToken: "address",
                 toToken: "address",
@@ -30,7 +30,7 @@ const encodePairCurveV1 = (dataPool) => {
 
     //console.log(coins[i],coins[j],i,j)
 
-    const payload2 = Web3EthAbi.encodeParameter({
+    const payload2 = web3.eth.abi.encodeParameter({
             CurveV2Data: {
                 i: "uint256",
                 j: "uint256",
@@ -43,7 +43,7 @@ const encodePairCurveV1 = (dataPool) => {
             underlyingSwap: 0,
         });
 
-    return Web3EthAbi.encodeParameter({
+    return web3.eth.abi.encodeParameter({
             SwapParam: {
                 //index:"uint256",
                 fromToken: "address",
@@ -109,20 +109,20 @@ const encodeAllPair = (dataRoute, subRoute) => {
     const arrayAddressAdapter = subRoute.map(item => getAddressAdapter(item.type))
     const arrayDataEncode = subRoute.map(item => item.dataEncode)
 
-    const encodeAmountIn1 = Web3EthAbi.encodeParameters(
+    const encodeAmountIn1 = web3.eth.abi.encodeParameters(
         ['uint256[]'], [arrayAmountIn]
     );
-    const encodeAmountOut1 = Web3EthAbi.encodeParameters(
+    const encodeAmountOut1 = web3.eth.abi.encodeParameters(
         ['uint256[]'], [arrayAmountOut]
     );
-    const encodeRouters1 = Web3EthAbi.encodeParameters(
+    const encodeRouters1 = web3.eth.abi.encodeParameters(
         ['address[]'], [arrayAddressAdapter]
     );
-    const encodePayload1 = Web3EthAbi.encodeParameters(
+    const encodePayload1 = web3.eth.abi.encodeParameters(
         ['bytes[]'], [arrayDataEncode]
     );
     let fromToken1 = fromToken.address
-    const element1 = Web3EthAbi.encodeParameter({
+    const element1 = web3.eth.abi.encodeParameter({
             ElementSwap: {
                 encodeRouters: "bytes",
                 encodeAmountIn: "bytes",
@@ -144,7 +144,7 @@ const encodeAllPair = (dataRoute, subRoute) => {
 
 const encodePath = (routeInput) => {
     const arrayData = routeInput.map(item => item.dataEncodeAllPair)
-    const chain1 = Web3EthAbi.encodeParameters(
+    const chain1 = web3.eth.abi.encodeParameters(
         ['bytes[]'], [arrayData]
     );
     return chain1
@@ -184,17 +184,18 @@ export const encodeRouter = (routeInput) => {
     const arrayDataPath = routeOutput.map(item => item.dataEncodePath)
 
 
-    const dataEncodeRoute = Web3EthAbi.encodeParameters(
+    const dataEncodeRoute = web3.eth.abi.encodeParameters(
         ['bytes[]'], [arrayDataPath]
     );
 
     return dataEncodeRoute
 }
 
-const decodeRoute = (data) => {
-    const dataChain1 = Web3EthAbi.decodeParameters(['bytes[]'], data)[0][0];
-    const adaptor1 = Web3EthAbi.decodeParameters(['bytes[]'], dataChain1)[0][1];
-    const ele1 = Web3EthAbi.decodeParameter(
+export const decodeRoute = (data) => {
+    const dataChain1 = web3.eth.abi.decodeParameters(['bytes[]'], data);
+    console.log("🚀 ~ file: swapEncoder.js:196 ~ decodeRoute ~ dataChain1:", dataChain1)
+    /* const adaptor1 = web3.eth.abi.decodeParameters(['bytes[]'], dataChain1)[0][1];
+    const ele1 = web3.eth.abi.decodeParameter(
         {
             "ElementSwap": {
                 "encodeRouters": "bytes",
@@ -207,15 +208,15 @@ const decodeRoute = (data) => {
 
     //console.log(ele1);
 
-    const router = Web3EthAbi.decodeParameters(['address[]'], ele1.encodeRouters)[0];
-    const amountIn = Web3EthAbi.decodeParameters(['uint256[]'], ele1.encodeAmountIn)[0];
-    const amountOut = Web3EthAbi.decodeParameters(['uint256[]'], ele1.encodeAmountOut)[0];
+    const router = web3.eth.abi.decodeParameters(['address[]'], ele1.encodeRouters)[0];
+    const amountIn = web3.eth.abi.decodeParameters(['uint256[]'], ele1.encodeAmountIn)[0];
+    const amountOut = web3.eth.abi.decodeParameters(['uint256[]'], ele1.encodeAmountOut)[0];
     const fromToken = ele1.fromToken
-    const payloadele1 = Web3EthAbi.decodeParameters(['bytes[]'], ele1.encodePayload)[0]
+    const payloadele1 = web3.eth.abi.decodeParameters(['bytes[]'], ele1.encodePayload)[0]
 
 
     payloadele1.map((item, index) => {
-        const swapele1 = Web3EthAbi.decodeParameter(
+        const swapele1 = web3.eth.abi.decodeParameter(
             {
                 "SwapParam": {
                     //"index":"uint256",
@@ -236,7 +237,7 @@ const decodeRoute = (data) => {
 
         if (swapele1.payload !== "0x") {
 
-            const curve = Web3EthAbi.decodeParameter(
+            const curve = web3.eth.abi.decodeParameter(
                 {
                     "CurveV2Data:": {
                         "i": "uint256",
@@ -249,5 +250,5 @@ const decodeRoute = (data) => {
         }
 
 
-    })
+    }) */
 }

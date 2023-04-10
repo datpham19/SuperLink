@@ -61,6 +61,7 @@ export const POOL_TYPE = {
     uniV2: 'uniV2',
     uniV3: 'uniV3',
     curveV1: 'curveV1',
+    curveV1_Crv: 'curveV1Crv',
     curveV2: 'curveV2',
     curveV2Fac: 'curveV2Fac',
     balancer: 'balancer'

@@ -2,10 +2,13 @@
 
 import cors from 'cors'
 import express from 'express'
-import {validateSchema} from "./schemas/validator.js";
-import {main as superLinkRouter} from "./routers/calculator.js";
-import {requestSchema} from "./schemas/calculateSchema.js";
-import {encodeRouter} from "./routers/swapEncoder.js";
+import { validateSchema } from "./schemas/validator.js";
+import { main as superLinkRouter } from "./routers/calculator.js";
+import { requestSchema } from "./schemas/calculateSchema.js";
+import { decodeRoute, encodeRouter } from "./routers/swapEncoder.js";
+
+//const NodeCache = require("node-cache");
+
 
 const app = express()
 const port = process.env.PORT || 3000;;
@@ -26,13 +29,14 @@ app.post('/calculate', async (req, res) => {
     let response = {}
     let responseData = []
     if (isValid) {
+
         await superLinkRouter(body.token0, body.token1, body.amount, body.chain).then((tokenOut) => {
-            responseData = tokenOut
+            responseData = tokenOut 
         })
         // Return user data if it's valid
     } else {
         // Return a 400 Bad Request error if data is invalid
-        res.status(400).json({error: 'Invalid data'});
+        res.status(400).json({ error: 'Invalid data' });
     };
     response.data = responseData;
     response.total = responseData.reduce((a, b) => a + b.amountOut, 0) / (10 ** 36)
@@ -43,7 +47,7 @@ app.post('/calculate', async (req, res) => {
 
 app.post('/encode', async (req, res) => {
     let data = encodeRouter(req.body);
-    res.json({data: data})
+    res.json({ data: data })
 });
 
 app.listen(port, () => {

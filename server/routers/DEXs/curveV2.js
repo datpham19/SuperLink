@@ -393,7 +393,7 @@ export const calculateAmountTradedCurveV2 = (priceImpactEst, dataPool) => {
         const priceImpact = 1 - priceMarket / rate
 
         if (priceImpact === NaN) {
-            console.log(address, amountIn, canduoi, cantren, priceImpact, index)
+            //console.log(address, amountIn, canduoi, cantren, priceImpact, index)
             return 0
         }
         if (Math.abs(priceImpact - priceImpactEst) < 0.00001) {

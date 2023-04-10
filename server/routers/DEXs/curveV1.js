@@ -66,14 +66,35 @@ export const getAddressPoolCurveV1 = async (DataTokenA, DataTokenB, listDataPool
     })
         .filter(item => item.assetTypeName === 'usd')
         .map(item => {
+            const poolType = item.isMetaPool ? POOL_TYPE.curveV1_Crv:POOL_TYPE.curveV1
+
             return {
                 ...item,
-                type: POOL_TYPE.curveV1,
+                type: poolType,
                 name: item.name ? item.name : "noName",
                 A: item.amplificationCoefficient
             }
         })
     return listPoolforPair
+}
+
+
+export const getReservePoolCurveV1Meta = async (address,coins)=>{
+    const contractNormal = new web3.eth.Contract(
+        ABI.POOL_CURVE_V1,
+        address
+    );
+
+    const balances = await Promise.all(coins.map(async (item, index) => {
+        return await contractNormal.methods.balances(index).call()
+    })).then(res => res)
+        .catch(res => {
+            return coins.map(item => 1)
+        })
+
+        return {
+            reserve: balances
+        }
 }
 
 export const getReservePoolCurveV1 = async (address, coins) => {

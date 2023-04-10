@@ -8,17 +8,20 @@
     "start:dev": "nodemon --experimental-modules server/index.js"
   },
   "dependencies": {
+    "abi-decoder": "^2.4.0",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
-    "http-errors": "~1.6.3",
-    "jade": "~1.11.0",
-    "morgan": "~1.9.1",
-    "web3": "^1.8.1",
-    "web3-eth-abi": "^1.9.0",
-    "abi-decoder": "^2.4.0",
-    "lodash": "^4.17.21",
     "ethers": "4.0.46",
     "express": "^4.17.1",
-    "hex2dec": "1.1.2"
+    "hex2dec": "1.1.2",
+    "http-errors": "~1.6.3",
+    "jade": "~1.11.0",
+    "lodash": "^4.17.21",
+    "memcached": "^2.2.2",
+    "morgan": "~1.9.1",
+    "node-cache": "^5.1.2",
+    "nodemon": "^2.0.22",
+    "web3": "^1.8.1",
+    "web3-eth-abi": "^1.9.0"
   }
 }
