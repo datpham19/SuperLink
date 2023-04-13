@@ -1,5 +1,5 @@
-import {ABI, POOL_TYPE} from "../constants.js"
-import {web3} from "../web3.js"
+import { ABI, POOL_TYPE } from "../constants.js"
+import { web3 } from "../web3.js"
 
 
 const getUnderlyingAddressCurve = async (address, coins) => {
@@ -66,7 +66,7 @@ export const getAddressPoolCurveV1 = async (DataTokenA, DataTokenB, listDataPool
     })
         .filter(item => item.assetTypeName === 'usd')
         .map(item => {
-            const poolType = item.isMetaPool ? POOL_TYPE.curveV1_Crv:POOL_TYPE.curveV1
+            const poolType = item.isMetaPool ? POOL_TYPE.curveV1_Crv : POOL_TYPE.curveV1
 
             return {
                 ...item,
@@ -79,7 +79,7 @@ export const getAddressPoolCurveV1 = async (DataTokenA, DataTokenB, listDataPool
 }
 
 
-export const getReservePoolCurveV1Meta = async (address,coins)=>{
+export const getReservePoolCurveV1Meta = async (address, coins) => {
     const contractNormal = new web3.eth.Contract(
         ABI.POOL_CURVE_V1,
         address
@@ -92,9 +92,9 @@ export const getReservePoolCurveV1Meta = async (address,coins)=>{
             return coins.map(item => 1)
         })
 
-        return {
-            reserve: balances
-        }
+    return {
+        reserve: balances
+    }
 }
 
 export const getReservePoolCurveV1 = async (address, coins) => {
@@ -161,7 +161,7 @@ export const getReservePoolCurveV1 = async (address, coins) => {
 }
 
 export const calculateAmountTradedCurveV1 = (priceImpactEst, dataPool) => {
-    const {i, j, coins, reserve, rate, address} = dataPool
+    const { i, j, coins, reserve, rate, address } = dataPool
     let cantren = reserve[j] * 10 / rate
     let canduoi = 0.01 * 10 ** 36
 
@@ -191,7 +191,7 @@ export const calculateAmountTradedCurveV1 = (priceImpactEst, dataPool) => {
 
 export const calcAmountOutCurvev1 = (amountIn, reserve, otherParam) => {
 
-    const {i, j, A, fee} = otherParam
+    const { i, j, A, fee } = otherParam
 
     const N_COINS = reserve.length
     const get_D = (reserve, A) => {
@@ -222,7 +222,7 @@ export const calcAmountOutCurvev1 = (amountIn, reserve, otherParam) => {
                     break;
             }
         }
-        //console.log(D)
+        console.log(D)
 
         return D;
     }
@@ -266,6 +266,8 @@ export const calcAmountOutCurvev1 = (amountIn, reserve, otherParam) => {
             }
         }
 
+        console.log(y)
+
 
         return y;
     }
@@ -281,14 +283,14 @@ export const calcAmountOutCurvev1 = (amountIn, reserve, otherParam) => {
 
     const amountOut = get_dy(i, j, amountIn)
 
-
+    console.log(amountOut)
     return amountOut
 }
 
 
 export const calcRateCurveV1 = (info, i, j) => {
     const AMOUNT_CALC_RATE = 0.001
-    const {reserve, A, fee, decimals} = info
+    const { reserve, A, fee, decimals } = info
     const otherParam = {
         i, j, A, fee, decimals
     }
@@ -297,4 +299,15 @@ export const calcRateCurveV1 = (info, i, j) => {
     const rate = amountOut / AMOUNT_CALC_RATE
     return rate
 }
+
+const amountIn = 10000
+const reserve = [1000000, 2000000, 3000000]
+const otherParam = {
+    i:1,
+    j:2,
+    A:3,
+    fee:4
+}
+
+calcAmountOutCurvev1(amountIn, reserve,otherParam)
 

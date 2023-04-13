@@ -417,7 +417,42 @@ const convertBigInttoNumberRoute = (routeInput) => {
 }
 
 
-const oklaMain = async () => {
+const convertNumbertoBigIntRoute = (routeInput) => {
+    const routeOutput = routeInput.map(item => {
+        const route = item.route.map(routeItem => {
+            const newSubRoute = routeItem.subRoute.map(it => {
+
+                if (it.type === POOL_TYPE.curveV2) {
+                    const newA = it.A ? BigInt(it.A) : 0
+                    const newD = it.D ? BigInt(it.D) : 0
+                    const newGamma = it.gamma ? BigInt(it.gamma) : 0
+                    return {
+                        ...it,
+                        A: newA,
+                        D: newD,
+                        gamma: newGamma
+                    }
+                }
+                else return {
+                    ...it
+                }
+            })
+
+            return {
+                ...routeItem,
+                subRoute: newSubRoute,
+            }
+        })
+        return {
+            ...item,
+            route: route,
+        }
+    })
+    return routeOutput
+}
+
+
+const readInputRoute = async () => {
     return new Promise((resolve, reject) => {
         fs.readFile('input.json', 'utf8', function readFileCallback(err, data) {
             if (err) {
@@ -431,116 +466,59 @@ const oklaMain = async () => {
 }
 
 
+const writeInputRoute = (data) => {
+    const JsonRoute = JSON.stringify(data)
+    fs.writeFile("input.json", JsonRoute, function (err) {
+        if (err) throw err;
+        console.log('complete');
+    }
+    );
+}
+
+
 export const main = async (tokenA, tokenB, amount = 10000000, chain, callback) => {
 
     genWeb3Route(chain.chainRPC)
 
-    /*  const start = Date.now();
- 
-     const allRouter = await findAllRoute(tokenA, tokenB, chain.chainId, listPoolCurveV1)
- 
- 
- 
- 
- 
- 
-     const mid = Date.now();
-     console.log(`Execution time getRouter: ${mid - start} ms`);
-     //listPoolCurveV1.push(...DATA_POOL_CURVE_TESTNET_BSC)
- 
-     let queuePoolCurve = await Promise.all(uniqBy(listPoolCurveV1, 'id').map(async it => {
-         const detail = await getDetailPool(it.address, it.type, it.coins)
-         return {
-             ...it,
-             ...detail
-         }
-     }))
- 
-     const routeHaveData = await getDataRoute(allRouter)
- 
-     const routeHaveTradeEst = setAmountTradedEst(routeHaveData, 0.01)
- 
-     const routeHavePercent = splicePercent(routeHaveTradeEst)
- 
-     const sortRouteByPercent = sortRoute(routeHavePercent)
- 
-     const routeHavePoolMultiToken = addPoolMultiToken(sortRouteByPercent, queuePoolCurve)
-     const resultRoute = convertBigInttoNumberRoute(routeHavePoolMultiToken)
- 
-     const JsonRoute = JSON.stringify(resultRoute)
- 
-     fs.writeFile ("input.json", JsonRoute, function(err) {
-         if (err) throw err;
-         console.log('complete');
-         }
-     );
-  */
+    const dataRoute = await readInputRoute()
 
-    const resultRoute = await oklaMain()
+    const dataBigInt= convertNumbertoBigIntRoute(dataRoute)
 
+    const mid = Date.now();
+        let maxOut = [0, 0, 0]
 
+    for (let i = 1; i < 200; i++) {
 
+        const routeHaveTradeEst = setAmountTradedEst(dataBigInt, 0.005 * i)
 
+        const routeHavePercent1 = splicePercent(routeHaveTradeEst)
+        //console.log("🚀 ~ file: index.js:411 ~ main ~ routeHavePercent1:", routeHavePercent1)
 
+        const filterRoute1 = filterSmallPool(routeHavePercent1, 0.01)
 
+        const ecec1 = splicePercent(filterRoute1)
 
+        const okla = calcAmountOutRoute(ecec1, amount * 10 ** 36)
+        const out = okla.reduce((a, b) => a + b.amountOut, 0) / (10 ** 36)
+        const amountIn = okla.reduce((a, b) => a + b.amountIn, 0) / (10 ** 36)
 
+        if (maxOut[0] < out) {
+            maxOut[0] = out
+            maxOut[1] = 0.005 * i
+            maxOut[2] = okla
+        }
+
+        //console.log(okla,out , amountIn,0.01 * i)
+    }
+
+    //console.log(maxOut[2])
+    const resultRoute = convertBigInttoNumberRoute(maxOut[2])
+
+    const end = Date.now();
+    console.log(`Execution time calAmoutOut: ${end - mid} ms`);
 
     return resultRoute
 
-    /*  const routeHaveTradeEstLan2 = setAmountTradedEst(routeHavePoolMultiToken, 0.01)
- 
-     const routeHavePercentLan2 = splicePercent(routeHaveTradeEstLan2)
-     const okla = calcAmountOutRoute(routeHavePercentLan2, amount * 10 ** 36)
- 
-     const resultRoute = convertBigInttoNumberRoute(okla)
- 
- 
- 
-     
- 
-    
- 
- 
-     return resultRoute */
-
-    //const filterRoute = filterSmallPool(routeHavePercentLan2, 0.02)
-
-
-    /* 
-        let maxOut = [0, 0, 0]
-    
-        for (let i = 1; i < 200; i++) {
-    
-            const routeHaveTradeEst = setAmountTradedEst(routeHavePercentLan2, 0.005 * i)
-    
-            const routeHavePercent1 = splicePercent(routeHaveTradeEst)
-            //console.log("🚀 ~ file: index.js:411 ~ main ~ routeHavePercent1:", routeHavePercent1)
-    
-            const filterRoute1 = filterSmallPool(routeHavePercent1, 0.01)
-    
-            const ecec1 = splicePercent(filterRoute1)
-    
-            const okla = calcAmountOutRoute(ecec1, amount * 10 ** 36)
-            const out = okla.reduce((a, b) => a + b.amountOut, 0) / (10 ** 36)
-            const amountIn = okla.reduce((a, b) => a + b.amountIn, 0) / (10 ** 36)
-    
-            if (maxOut[0] < out) {
-                maxOut[0] = out
-                maxOut[1] = 0.005 * i
-                maxOut[2] = okla
-            }
-    
-    
-            //console.log(okla,out , amountIn,0.01 * i)
-        }
-    
-        //console.log(maxOut[2])
-        const resultRoute = convertBigInttoNumberRoute(maxOut[2])
-    
-        const end = Date.now();
-        console.log(`Execution time calAmoutOut: ${end - mid} ms`);
-    
-        return resultRoute */
-
 }
+
+
